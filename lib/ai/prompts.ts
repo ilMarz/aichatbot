@@ -59,10 +59,13 @@ About the origin of user's request:
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
+  customBasePrompt,
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
+  customBasePrompt?: string;
 }) => {
+  const basePrompt = customBasePrompt ?? regularPrompt;
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
   // reasoning models don't need artifacts prompt (they can't use tools)
@@ -70,10 +73,10 @@ export const systemPrompt = ({
     selectedChatModel.includes("reasoning") ||
     selectedChatModel.includes("thinking")
   ) {
-    return `${regularPrompt}\n\n${requestPrompt}`;
+    return `${basePrompt}\n\n${requestPrompt}`;
   }
 
-  return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+  return `${basePrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
 };
 
 export const codePrompt = `

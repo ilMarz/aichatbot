@@ -23,18 +23,25 @@ export async function proxy(request: NextRequest) {
     secureCookie: !isDevelopmentEnvironment,
   });
 
-  if (!token) {
-    const redirectUrl = encodeURIComponent(request.url);
+  const isOnAuthPage =
+    pathname === "/login" || pathname === "/register";
 
-    return NextResponse.redirect(
-      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url)
-    );
+  if (!token) {
+    if (isOnAuthPage) return NextResponse.next();
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   const isGuest = guestRegex.test(token?.email ?? "");
 
-  if (token && !isGuest && ["/login", "/register"].includes(pathname)) {
+  if (!isGuest && isOnAuthPage) {
     return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  // Protect admin routes: only users with role "admin" can access /admin
+  if (pathname.startsWith("/admin")) {
+    if ((token as any).role !== "admin") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
   }
 
   return NextResponse.next();
