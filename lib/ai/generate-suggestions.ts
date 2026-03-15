@@ -2,11 +2,12 @@ import { generateText } from "ai";
 import { getTitleModel } from "./providers";
 
 /**
- * Uses AI to generate 4 suggested questions coherent with the given system prompt.
- * Returns an array of strings, falling back to generic questions on error.
+ * Uses AI to generate 4 suggested questions coherent with the system prompt.
+ * If conversationContext is provided, questions are tailored to the conversation.
  */
 export async function generateSuggestedQuestions(
-  systemPrompt: string
+  systemPrompt: string,
+  conversationContext?: string
 ): Promise<string[]> {
   const fallback = [
     "Come posso aiutarti oggi?",
@@ -16,13 +17,19 @@ export async function generateSuggestedQuestions(
   ];
 
   try {
+    const contextSection = conversationContext
+      ? `\nConversazione recente:\n${conversationContext}\n\nGenera 4 domande di follow-up che l'utente potrebbe fare continuando questa conversazione.`
+      : "Genera 4 domande che un utente potrebbe fare a questo assistente per iniziare una conversazione.";
+
     const { text } = await generateText({
       model: getTitleModel(),
       prompt: `Dato questo system prompt per un assistente AI:
 
 "${systemPrompt}"
 
-Genera esattamente 4 domande brevi (max 8 parole ciascuna) che un utente potrebbe fare a questo assistente. Le domande devono essere coerenti con le capacità descritte nel prompt.
+${contextSection}
+
+Le domande devono essere brevi (max 8 parole), in italiano, coerenti con le capacità dell'assistente.
 Rispondi SOLO con le 4 domande, una per riga, senza numerazione, senza prefissi, senza spiegazioni.`,
       maxTokens: 150,
     });
@@ -33,7 +40,7 @@ Rispondi SOLO con le 4 domande, una per riga, senza numerazione, senza prefissi,
       .filter((l) => l.length > 0 && l.length < 80)
       .slice(0, 4);
 
-    return lines.length === 4 ? lines : fallback;
+    return lines.length >= 2 ? lines : fallback;
   } catch {
     return fallback;
   }

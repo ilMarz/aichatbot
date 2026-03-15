@@ -9,7 +9,6 @@ import {
   updateUserRole,
   upsertSetting,
 } from "@/lib/db/queries";
-import { generateSuggestedQuestions } from "@/lib/ai/generate-suggestions";
 import type { UserRole } from "@/lib/db/schema";
 
 // ─── Guard ────────────────────────────────────────────────────────────────────
@@ -41,11 +40,6 @@ export async function updateSystemPromptAction(
       return { status: "error", message: "Il prompt non può essere vuoto." };
     }
     await upsertSetting("system_prompt", parsed.data);
-
-    // Auto-generate suggested questions based on the new prompt
-    const questions = await generateSuggestedQuestions(parsed.data);
-    await upsertSetting("suggested_questions", JSON.stringify(questions));
-
     revalidatePath("/admin/settings");
     return { status: "success", message: "Prompt aggiornato con successo." };
   } catch (err: any) {
