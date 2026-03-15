@@ -35,6 +35,7 @@ import {
   AlertDialogTitle,
 } from "./ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { ColorThemePicker } from "./color-theme-picker";
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -158,6 +159,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               </SidebarMenuItem>
             )}
           </SidebarMenu>
+          <ColorThemePicker />
           {user && <SidebarUserNav user={user} />}
         </SidebarFooter>
       </Sidebar>

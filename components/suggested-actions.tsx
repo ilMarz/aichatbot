@@ -7,13 +7,6 @@ import type { ChatMessage } from "@/lib/types";
 import { Suggestion } from "./elements/suggestion";
 import type { VisibilityType } from "./visibility-selector";
 
-const DEFAULT_SUGGESTIONS = [
-  "Come posso aiutarti oggi?",
-  "Hai domande su qualcosa di specifico?",
-  "Vuoi che ti spieghi qualcosa?",
-  "Come posso semplificarti la giornata?",
-];
-
 type SuggestedActionsProps = {
   chatId: string;
   sendMessage: UseChatHelpers<ChatMessage>["sendMessage"];
@@ -21,19 +14,39 @@ type SuggestedActionsProps = {
 };
 
 function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
-  const [suggestedActions, setSuggestedActions] =
-    useState<string[]>(DEFAULT_SUGGESTIONS);
+  const [suggestedActions, setSuggestedActions] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [enabled, setEnabled] = useState(true);
 
   useEffect(() => {
-    fetch("/api/suggested-actions")
+    setLoading(true);
+    fetch(`/api/suggested-actions?chatId=${chatId}`)
       .then((r) => r.json())
       .then((data) => {
+        if (data?.enabled === false) {
+          setEnabled(false);
+          setLoading(false);
+          return;
+        }
         if (Array.isArray(data?.suggestions) && data.suggestions.length > 0) {
           setSuggestedActions(data.suggestions);
         }
       })
-      .catch(() => {});
-  }, []);
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [chatId]);
+
+  if (!enabled || (!loading && suggestedActions.length === 0)) return null;
+
+  if (loading) {
+    return (
+      <div className="grid w-full gap-2 sm:grid-cols-2" data-testid="suggested-actions">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="h-11 animate-pulse rounded-xl bg-muted" />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div

@@ -1,31 +1,19 @@
 import { Suspense } from "react";
 import { getSetting } from "@/lib/db/queries";
 import { SettingsForm } from "./settings-form";
-import { SuggestedQuestionsForm } from "./suggested-questions-form";
+import { SuggestedQuestionsToggle } from "./suggested-questions-toggle";
 
 async function SettingsContent() {
   const currentPrompt =
     (await getSetting("system_prompt")) ??
     "You are a friendly assistant! Keep your responses concise and helpful.";
-
   return <SettingsForm initialPrompt={currentPrompt} />;
 }
 
-async function SuggestedQuestionsContent() {
-  const raw = await getSetting("suggested_questions");
-  let questions: string[] = [
-    "Come posso aiutarti oggi?",
-    "Hai domande su qualcosa di specifico?",
-    "Vuoi che ti spieghi qualcosa?",
-    "Come posso semplificarti la giornata?",
-  ];
-  if (raw) {
-    try {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) questions = parsed;
-    } catch {}
-  }
-  return <SuggestedQuestionsForm initialQuestions={questions} />;
+async function ToggleContent() {
+  const raw = await getSetting("suggested_questions_enabled");
+  const enabled = raw !== "false"; // default true
+  return <SuggestedQuestionsToggle initialEnabled={enabled} />;
 }
 
 export default function SettingsPage() {
@@ -44,28 +32,15 @@ export default function SettingsPage() {
         <p className="mb-4 text-sm text-muted-foreground">
           Il prompt inviato all&apos;IA all&apos;inizio di ogni conversazione.
         </p>
-        <Suspense
-          fallback={
-            <div className="h-64 animate-pulse rounded-md bg-muted" />
-          }
-        >
+        <Suspense fallback={<div className="h-64 animate-pulse rounded-md bg-muted" />}>
           <SettingsContent />
         </Suspense>
       </div>
 
-      {/* Suggested Questions */}
+      {/* Suggested Questions Toggle */}
       <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-        <h2 className="mb-1 text-base font-semibold">Domande suggerite</h2>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Le domande mostrate come suggerimenti nella schermata iniziale della
-          chat.
-        </p>
-        <Suspense
-          fallback={
-            <div className="h-32 animate-pulse rounded-md bg-muted" />
-          }
-        >
-          <SuggestedQuestionsContent />
+        <Suspense fallback={<div className="h-10 animate-pulse rounded-md bg-muted" />}>
+          <ToggleContent />
         </Suspense>
       </div>
     </div>
