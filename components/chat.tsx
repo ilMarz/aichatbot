@@ -83,6 +83,7 @@ export function Chat({
     sendMessage,
     status,
     stop,
+    error: chatError,
     regenerate,
     resumeStream,
     addToolApprovalResponse,
@@ -153,6 +154,14 @@ export function Chat({
       }
     },
   });
+
+  // When an error occurs, explicitly stop to reset status back to "ready"
+  // so the user can send a new message without having to refresh the page.
+  useEffect(() => {
+    if (chatError) {
+      stop();
+    }
+  }, [chatError, stop]);
 
   const searchParams = useSearchParams();
   const query = searchParams.get("query");

@@ -7,6 +7,7 @@ import {
   stepCountIs,
   streamText,
 } from "ai";
+import { gateway } from "@ai-sdk/gateway";
 import { checkBotId } from "botid/server";
 import { after } from "next/server";
 import { createResumableStreamContext } from "resumable-stream";
@@ -170,6 +171,7 @@ export async function POST(request: Request) {
                 "createDocument",
                 "updateDocument",
                 "requestSuggestions",
+                "perplexity_search",
               ],
           providerOptions: isReasoningModel
             ? {
@@ -183,6 +185,7 @@ export async function POST(request: Request) {
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
             requestSuggestions: requestSuggestions({ session, dataStream }),
+            perplexity_search: gateway.tools.perplexitySearch(),
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
