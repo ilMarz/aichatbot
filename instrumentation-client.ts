@@ -1,10 +1,1 @@
-import { initBotId } from "botid/client/core";
-
-initBotId({
-  protect: [
-    {
-      path: "/api/chat",
-      method: "POST",
-    },
-  ],
-});
+// Bot protection removed — caused false positives on mobile browsers
