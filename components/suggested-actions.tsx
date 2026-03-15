@@ -2,10 +2,17 @@
 
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { motion } from "framer-motion";
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import type { ChatMessage } from "@/lib/types";
 import { Suggestion } from "./elements/suggestion";
 import type { VisibilityType } from "./visibility-selector";
+
+const DEFAULT_SUGGESTIONS = [
+  "Come posso aiutarti oggi?",
+  "Hai domande su qualcosa di specifico?",
+  "Vuoi che ti spieghi qualcosa?",
+  "Come posso semplificarti la giornata?",
+];
 
 type SuggestedActionsProps = {
   chatId: string;
@@ -14,12 +21,19 @@ type SuggestedActionsProps = {
 };
 
 function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
-  const suggestedActions = [
-    "What are the advantages of using TypeScript?",
-    "Write code to demonstrate Dijkstra's algorithm",
-    "Help me write an essay about Silicon Valley",
-    "What is the weather in San Francisco?",
-  ];
+  const [suggestedActions, setSuggestedActions] =
+    useState<string[]>(DEFAULT_SUGGESTIONS);
+
+  useEffect(() => {
+    fetch("/api/suggested-actions")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data?.suggestions) && data.suggestions.length > 0) {
+          setSuggestedActions(data.suggestions);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div

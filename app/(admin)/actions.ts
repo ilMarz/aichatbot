@@ -50,6 +50,44 @@ export async function updateSystemPromptAction(
   }
 }
 
+// ─── Suggested Questions ──────────────────────────────────────────────────────
+
+export type SuggestedQuestionsState = {
+  status: "idle" | "success" | "error";
+  message?: string;
+};
+
+export async function updateSuggestedQuestionsAction(
+  _state: SuggestedQuestionsState,
+  formData: FormData
+): Promise<SuggestedQuestionsState> {
+  try {
+    await requireAdmin();
+    const questions = [
+      formData.get("q1"),
+      formData.get("q2"),
+      formData.get("q3"),
+      formData.get("q4"),
+    ]
+      .map((q) => String(q ?? "").trim())
+      .filter(Boolean);
+    if (questions.length === 0) {
+      return { status: "error", message: "Inserisci almeno una domanda." };
+    }
+    await upsertSetting("suggested_questions", JSON.stringify(questions));
+    revalidatePath("/admin/settings");
+    return {
+      status: "success",
+      message: "Domande suggerite aggiornate con successo.",
+    };
+  } catch (err: any) {
+    return {
+      status: "error",
+      message: err?.message ?? "Errore durante il salvataggio.",
+    };
+  }
+}
+
 // ─── Create User ──────────────────────────────────────────────────────────────
 
 export type CreateUserState = {
