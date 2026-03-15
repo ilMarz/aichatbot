@@ -1,11 +1,16 @@
+import { Suspense } from "react";
 import { getSetting } from "@/lib/db/queries";
 import { SettingsForm } from "./settings-form";
 
-export default async function SettingsPage() {
+async function SettingsContent() {
   const currentPrompt =
     (await getSetting("system_prompt")) ??
     "You are a friendly assistant! Keep your responses concise and helpful.";
 
+  return <SettingsForm initialPrompt={currentPrompt} />;
+}
+
+export default function SettingsPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -16,7 +21,13 @@ export default async function SettingsPage() {
         </p>
       </div>
       <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-        <SettingsForm initialPrompt={currentPrompt} />
+        <Suspense
+          fallback={
+            <div className="h-64 animate-pulse rounded-md bg-muted" />
+          }
+        >
+          <SettingsContent />
+        </Suspense>
       </div>
     </div>
   );

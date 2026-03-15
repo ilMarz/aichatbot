@@ -1,25 +1,15 @@
-import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
-import { auth } from "@/app/(auth)/auth";
 
-export default async function AdminLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Opt out of static rendering - admin requires live auth + DB
-  await connection();
-
-  const session = await auth();
-
-  if (!session?.user || session.user.role !== "admin") {
-    redirect("/");
-  }
-
   return (
     <div className="min-h-dvh bg-background">
-      {/* Top nav */}
+      {/* Static header - no data fetching needed */}
       <header className="border-b border-border bg-background">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-6">
@@ -51,8 +41,17 @@ export default async function AdminLayout({
         </div>
       </header>
 
-      {/* Page content */}
-      <main className="mx-auto max-w-5xl px-6 py-10">{children}</main>
+      {/* Dynamic content - connection() opts this into request-time rendering */}
+      <Suspense fallback={<div className="flex h-dvh" />}>
+        <AdminContent>{children}</AdminContent>
+      </Suspense>
     </div>
+  );
+}
+
+async function AdminContent({ children }: { children: React.ReactNode }) {
+  await connection();
+  return (
+    <main className="mx-auto max-w-5xl px-6 py-10">{children}</main>
   );
 }
