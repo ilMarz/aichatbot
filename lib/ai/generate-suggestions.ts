@@ -31,7 +31,7 @@ ${contextSection}
 
 Le domande devono essere brevi (max 8 parole), in italiano, coerenti con le capacità dell'assistente.
 Rispondi SOLO con le 4 domande, una per riga, senza numerazione, senza prefissi, senza spiegazioni.`,
-      maxTokens: 150,
+      maxOutputTokens: 150,
     });
 
     const lines = text

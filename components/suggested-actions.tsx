@@ -16,12 +16,18 @@ type SuggestedActionsProps = {
 function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
   const [suggestedActions, setSuggestedActions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [enabled, setEnabled] = useState(true);
 
   useEffect(() => {
     setLoading(true);
     fetch(`/api/suggested-actions?chatId=${chatId}`)
       .then((r) => r.json())
       .then((data) => {
+        if (data?.enabled === false) {
+          setEnabled(false);
+          setLoading(false);
+          return;
+        }
         if (Array.isArray(data?.suggestions) && data.suggestions.length > 0) {
           setSuggestedActions(data.suggestions);
         }
@@ -29,6 +35,8 @@ function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [chatId]);
+
+  if (!enabled || (!loading && suggestedActions.length === 0)) return null;
 
   if (loading) {
     return (

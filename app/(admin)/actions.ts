@@ -50,6 +50,16 @@ export async function updateSystemPromptAction(
   }
 }
 
+// ─── Suggested Questions Toggle ───────────────────────────────────────────────
+
+export async function toggleSuggestedQuestionsAction(
+  enabled: boolean
+): Promise<void> {
+  await requireAdmin();
+  await upsertSetting("suggested_questions_enabled", enabled ? "true" : "false");
+  revalidatePath("/admin/settings");
+}
+
 // ─── Create User ──────────────────────────────────────────────────────────────
 
 export type CreateUserState = {
