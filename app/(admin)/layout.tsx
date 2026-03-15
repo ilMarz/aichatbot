@@ -1,15 +1,16 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { connection } from "next/server";
 import { auth } from "@/app/(auth)/auth";
-
-// Admin pages require live auth + DB - never statically prerender
-export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Opt out of static rendering - admin requires live auth + DB
+  await connection();
+
   const session = await auth();
 
   if (!session?.user || session.user.role !== "admin") {
