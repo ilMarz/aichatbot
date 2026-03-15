@@ -55,7 +55,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                   alt={user.email ?? "User Avatar"}
                   className="rounded-full"
                   height={24}
-                  src={`https://avatar.vercel.sh/${user.email}`}
+                  src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(user.email ?? "")}&backgroundColor=71717a&fontFamily=Arial&fontSize=42&fontWeight=600&textColor=ffffff`}
                   width={24}
                 />
                 <span className="truncate" data-testid="user-email">
