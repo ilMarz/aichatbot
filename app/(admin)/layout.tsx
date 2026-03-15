@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/app/(auth)/auth";
 
+// Admin pages require live auth + DB — never statically prerender
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({
   children,
 }: {
