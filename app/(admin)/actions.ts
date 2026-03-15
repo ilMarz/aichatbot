@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/app/(auth)/auth";
 import {
+  createKnowledgeDocument,
   createUserWithRole,
+  deleteKnowledgeDocument,
   getAllUsers,
   updateUserRole,
   upsertSetting,
@@ -148,6 +150,79 @@ export async function updateUserRoleAction(
     return {
       status: "error",
       message: err?.message ?? "Errore durante l'aggiornamento del ruolo.",
+    };
+  }
+}
+
+// ─── Knowledge Base ────────────────────────────────────────────────────────────
+
+export type KnowledgeUploadState = {
+  status: "idle" | "success" | "error";
+  message?: string;
+};
+
+export async function uploadKnowledgeDocumentAction(
+  _state: KnowledgeUploadState,
+  formData: FormData
+): Promise<KnowledgeUploadState> {
+  try {
+    const session = await requireAdmin();
+
+    const title = z.string().min(1, "Il titolo è obbligatorio.").parse(formData.get("title"));
+    const content = z
+      .string()
+      .min(10, "Il testo deve avere almeno 10 caratteri.")
+      .parse(formData.get("content"));
+
+    // Lazy import to avoid loading embedding code on every server action
+    const { chunkText } = await import("@/lib/knowledge/chunker");
+    const { generateEmbeddings } = await import("@/lib/knowledge/embeddings");
+
+    const textChunks = chunkText(content);
+    const embeddings = await generateEmbeddings(textChunks);
+
+    const chunks = textChunks.map((text, i) => ({
+      content: text,
+      embedding: embeddings[i],
+    }));
+
+    await createKnowledgeDocument({
+      title,
+      content,
+      uploadedBy: session.user.id,
+      chunks,
+    });
+
+    revalidatePath("/admin/knowledge");
+    return {
+      status: "success",
+      message: `Documento "${title}" caricato con ${chunks.length} chunk.`,
+    };
+  } catch (err: any) {
+    return {
+      status: "error",
+      message: err?.message ?? "Errore durante il caricamento del documento.",
+    };
+  }
+}
+
+export type KnowledgeDeleteState = {
+  status: "idle" | "success" | "error";
+  message?: string;
+};
+
+export async function deleteKnowledgeDocumentAction(
+  id: string
+): Promise<KnowledgeDeleteState> {
+  try {
+    await requireAdmin();
+    await deleteKnowledgeDocument(id);
+    revalidatePath("/admin/knowledge");
+    return { status: "success", message: "Documento eliminato." };
+  } catch (err: any) {
+    return {
+      status: "error",
+      message: err?.message ?? "Errore durante l'eliminazione.",
     };
   }
 }

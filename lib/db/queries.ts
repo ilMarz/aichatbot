@@ -23,6 +23,9 @@ import {
   chat,
   type DBMessage,
   document,
+  type KnowledgeDocument,
+  knowledgeChunk,
+  knowledgeDocument,
   message,
   type Settings,
   settings,
@@ -669,4 +672,88 @@ export async function upsertSetting(key: string, value: string): Promise<void> {
   } catch (_error) {
     throw new ChatbotError("bad_request:database", "Failed to upsert setting");
   }
+}
+
+// ─── Knowledge Base ────────────────────────────────────────────────────────────
+
+export async function getAllKnowledgeDocuments(): Promise<
+  Array<Pick<KnowledgeDocument, "id" | "title" | "createdAt"> & { preview: string }>
+> {
+  const docs = await db
+    .select({
+      id: knowledgeDocument.id,
+      title: knowledgeDocument.title,
+      content: knowledgeDocument.content,
+      createdAt: knowledgeDocument.createdAt,
+    })
+    .from(knowledgeDocument)
+    .orderBy(desc(knowledgeDocument.createdAt));
+
+  return docs.map((doc) => ({
+    id: doc.id,
+    title: doc.title,
+    createdAt: doc.createdAt,
+    preview: doc.content.slice(0, 150).replace(/\n+/g, " "),
+  }));
+}
+
+export async function getKnowledgeDocumentCount(): Promise<number> {
+  const [result] = await db
+    .select({ count: count(knowledgeDocument.id) })
+    .from(knowledgeDocument);
+  return result?.count ?? 0;
+}
+
+export async function createKnowledgeDocument({
+  title,
+  content,
+  uploadedBy,
+  chunks,
+}: {
+  title: string;
+  content: string;
+  uploadedBy: string | null;
+  chunks: Array<{ content: string; embedding: number[] }>;
+}): Promise<string> {
+  const [doc] = await db
+    .insert(knowledgeDocument)
+    .values({ title, content, uploadedBy, createdAt: new Date() })
+    .returning({ id: knowledgeDocument.id });
+
+  if (chunks.length > 0) {
+    await db.insert(knowledgeChunk).values(
+      chunks.map((c) => ({
+        documentId: doc.id,
+        content: c.content,
+        embedding: c.embedding,
+        createdAt: new Date(),
+      }))
+    );
+  }
+
+  return doc.id;
+}
+
+export async function deleteKnowledgeDocument(id: string): Promise<void> {
+  // Chunks are deleted automatically via ON DELETE CASCADE
+  await db
+    .delete(knowledgeDocument)
+    .where(eq(knowledgeDocument.id, id));
+}
+
+export async function searchSimilarChunks(
+  embedding: number[],
+  topK: number
+): Promise<string[]> {
+  const { sql } = await import("drizzle-orm");
+
+  const embeddingStr = `[${embedding.join(",")}]`;
+
+  const results = await db
+    .select({ content: knowledgeChunk.content })
+    .from(knowledgeChunk)
+    .orderBy(sql`${knowledgeChunk.embedding} <=> ${embeddingStr}::vector`)
+    .limit(topK);
+
+  return results.map((r) => r.content);
 }

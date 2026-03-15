@@ -1,6 +1,7 @@
 import type { InferSelectModel } from "drizzle-orm";
 import {
   boolean,
+  customType,
   foreignKey,
   json,
   pgTable,
@@ -10,6 +11,22 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+
+// pgvector custom type (1536 dims = text-embedding-3-small)
+const vector = customType<{ data: number[]; driverData: string }>({
+  dataType() {
+    return "vector(1536)";
+  },
+  toDriver(value: number[]): string {
+    return `[${value.join(",")}]`;
+  },
+  fromDriver(value: string): number[] {
+    return value
+      .slice(1, -1)
+      .split(",")
+      .map(Number);
+  },
+});
 
 export const user = pgTable("User", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -180,3 +197,29 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+// ─── Knowledge Base ────────────────────────────────────────────────────────────
+
+export const knowledgeDocument = pgTable("KnowledgeDocument", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  uploadedBy: uuid("uploadedBy").references(() => user.id, {
+    onDelete: "set null",
+  }),
+});
+
+export type KnowledgeDocument = InferSelectModel<typeof knowledgeDocument>;
+
+export const knowledgeChunk = pgTable("KnowledgeChunk", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  documentId: uuid("documentId")
+    .notNull()
+    .references(() => knowledgeDocument.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  embedding: vector("embedding"),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+});
+
+export type KnowledgeChunk = InferSelectModel<typeof knowledgeChunk>;

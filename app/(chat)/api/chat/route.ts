@@ -32,6 +32,7 @@ import {
   updateChatTitleById,
   updateMessage,
 } from "@/lib/db/queries";
+import { retrieveRelevantChunks } from "@/lib/knowledge/retriever";
 import type { DBMessage } from "@/lib/db/schema";
 import { ChatbotError } from "@/lib/errors";
 import { checkIpRateLimit } from "@/lib/ratelimit";
@@ -150,12 +151,22 @@ export async function POST(request: Request) {
     const stream = createUIMessageStream({
       originalMessages: isToolApprovalFlow ? uiMessages : undefined,
       execute: async ({ writer: dataStream }) => {
+        // RAG: retrieve relevant knowledge chunks for the current user message
+        const lastUserText =
+          (message?.parts?.find((p: any) => p.type === "text") as any)?.text ?? "";
+        const relevantChunks = await retrieveRelevantChunks(lastUserText, 5);
+        const knowledgeContext =
+          relevantChunks.length > 0
+            ? relevantChunks.join("\n\n---\n\n")
+            : undefined;
+
         const result = streamText({
           model: getLanguageModel(selectedChatModel),
           system: systemPrompt({
             selectedChatModel,
             requestHints,
             customBasePrompt: (await getSetting("system_prompt")) ?? undefined,
+            knowledgeContext,
           }),
           messages: modelMessages,
           stopWhen: stepCountIs(5),

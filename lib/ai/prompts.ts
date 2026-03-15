@@ -60,23 +60,28 @@ export const systemPrompt = ({
   selectedChatModel,
   requestHints,
   customBasePrompt,
+  knowledgeContext,
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
   customBasePrompt?: string;
+  knowledgeContext?: string;
 }) => {
   const basePrompt = customBasePrompt ?? regularPrompt;
   const requestPrompt = getRequestPromptFromHints(requestHints);
+  const knowledgeSection = knowledgeContext
+    ? `\n\nTESTI DI RIFERIMENTO (usa questi contenuti per rispondere nello stile appropriato, ma non citarli esplicitamente a meno che non sia richiesto):\n---\n${knowledgeContext}\n---`
+    : "";
 
   // reasoning models don't need artifacts prompt (they can't use tools)
   if (
     selectedChatModel.includes("reasoning") ||
     selectedChatModel.includes("thinking")
   ) {
-    return `${basePrompt}\n\n${requestPrompt}`;
+    return `${basePrompt}\n\n${requestPrompt}${knowledgeSection}`;
   }
 
-  return `${basePrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+  return `${basePrompt}\n\n${requestPrompt}${knowledgeSection}\n\n${artifactsPrompt}`;
 };
 
 export const codePrompt = `
