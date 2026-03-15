@@ -482,6 +482,10 @@ function PureModelSelectorCompact({
     openai: "OpenAI",
     google: "Google",
     xai: "xAI",
+    deepseek: "DeepSeek",
+    "meta-llama": "Meta Llama",
+    mistralai: "Mistral AI",
+    qwen: "Qwen",
     reasoning: "Reasoning",
   };
 
