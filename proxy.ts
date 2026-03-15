@@ -37,6 +37,13 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
+  // Protect admin routes: only users with role "admin" can access /admin
+  if (pathname.startsWith("/admin")) {
+    if ((token as any).role !== "admin") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+  }
+
   return NextResponse.next();
 }
 

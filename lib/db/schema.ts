@@ -15,9 +15,21 @@ export const user = pgTable("User", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   email: varchar("email", { length: 64 }).notNull(),
   password: varchar("password", { length: 64 }),
+  role: varchar("role", { length: 20, enum: ["user", "admin"] })
+    .notNull()
+    .default("user"),
 });
 
 export type User = InferSelectModel<typeof user>;
+export type UserRole = "user" | "admin";
+
+export const settings = pgTable("Settings", {
+  key: varchar("key", { length: 64 }).primaryKey().notNull(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+});
+
+export type Settings = InferSelectModel<typeof settings>;
 
 export const chat = pgTable("Chat", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),

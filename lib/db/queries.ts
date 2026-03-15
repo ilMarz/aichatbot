@@ -24,10 +24,13 @@ import {
   type DBMessage,
   document,
   message,
+  type Settings,
+  settings,
   type Suggestion,
   stream,
   suggestion,
   type User,
+  type UserRole,
   user,
   vote,
 } from "./schema";
@@ -598,5 +601,72 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
       "bad_request:database",
       "Failed to get stream ids by chat id"
     );
+  }
+}
+
+// ─── Admin queries ────────────────────────────────────────────────────────────
+
+export async function getAllUsers(): Promise<User[]> {
+  try {
+    return await db.select().from(user).orderBy(asc(user.email));
+  } catch (_error) {
+    throw new ChatbotError("bad_request:database", "Failed to get all users");
+  }
+}
+
+export async function updateUserRole(
+  userId: string,
+  role: UserRole
+): Promise<void> {
+  try {
+    await db.update(user).set({ role }).where(eq(user.id, userId));
+  } catch (_error) {
+    throw new ChatbotError(
+      "bad_request:database",
+      "Failed to update user role"
+    );
+  }
+}
+
+export async function createUserWithRole(
+  email: string,
+  password: string,
+  role: UserRole
+): Promise<void> {
+  const { generateHashedPassword } = await import("./utils");
+  const hashedPassword = generateHashedPassword(password);
+  try {
+    await db.insert(user).values({ email, password: hashedPassword, role });
+  } catch (_error) {
+    throw new ChatbotError(
+      "bad_request:database",
+      "Failed to create user with role"
+    );
+  }
+}
+
+export async function getSetting(key: string): Promise<string | null> {
+  try {
+    const [row] = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, key));
+    return row?.value ?? null;
+  } catch (_error) {
+    return null;
+  }
+}
+
+export async function upsertSetting(key: string, value: string): Promise<void> {
+  try {
+    await db
+      .insert(settings)
+      .values({ key, value, updatedAt: new Date() })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value, updatedAt: new Date() },
+      });
+  } catch (_error) {
+    throw new ChatbotError("bad_request:database", "Failed to upsert setting");
   }
 }

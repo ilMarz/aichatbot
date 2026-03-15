@@ -26,6 +26,7 @@ import {
   getChatById,
   getMessageCountByUserId,
   getMessagesByChatId,
+  getSetting,
   saveChat,
   saveMessages,
   updateChatTitleById,
@@ -155,7 +156,11 @@ export async function POST(request: Request) {
       execute: async ({ writer: dataStream }) => {
         const result = streamText({
           model: getLanguageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          system: systemPrompt({
+            selectedChatModel,
+            requestHints,
+            customBasePrompt: (await getSetting("system_prompt")) ?? undefined,
+          }),
           messages: modelMessages,
           stopWhen: stepCountIs(5),
           experimental_activeTools: isReasoningModel
