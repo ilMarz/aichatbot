@@ -1,5 +1,7 @@
 import { Suspense } from "react";
-import { getSetting } from "@/lib/db/queries";
+import { getAllKnowledgeDocuments, getSetting } from "@/lib/db/queries";
+import { DocumentList } from "../knowledge/document-list";
+import { KnowledgeForm } from "../knowledge/knowledge-form";
 import { SettingsForm } from "./settings-form";
 import { SuggestedQuestionsToggle } from "./suggested-questions-toggle";
 
@@ -14,6 +16,11 @@ async function ToggleContent() {
   const raw = await getSetting("suggested_questions_enabled");
   const enabled = raw !== "false"; // default true
   return <SuggestedQuestionsToggle initialEnabled={enabled} />;
+}
+
+async function DocumentListContent() {
+  const documents = await getAllKnowledgeDocuments();
+  return <DocumentList documents={documents} />;
 }
 
 export default function SettingsPage() {
@@ -42,6 +49,32 @@ export default function SettingsPage() {
         <Suspense fallback={<div className="h-10 animate-pulse rounded-md bg-muted" />}>
           <ToggleContent />
         </Suspense>
+      </div>
+
+      {/* Knowledge Base */}
+      <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <h2 className="mb-1 text-base font-semibold">Knowledge Base</h2>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Carica testi, trascrizioni o qualsiasi contenuto che il bot userà come
+          riferimento per rispondere nello stile configurato.
+        </p>
+
+        <KnowledgeForm />
+
+        <div className="mt-6">
+          <h3 className="mb-3 text-sm font-medium">Documenti caricati</h3>
+          <Suspense
+            fallback={
+              <div className="space-y-3">
+                {[1, 2].map((i) => (
+                  <div key={i} className="h-16 animate-pulse rounded-lg bg-muted" />
+                ))}
+              </div>
+            }
+          >
+            <DocumentListContent />
+          </Suspense>
+        </div>
       </div>
     </div>
   );
