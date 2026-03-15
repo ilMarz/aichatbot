@@ -318,57 +318,97 @@
 }
 
 /* ─── Color Themes ─────────────────────────────────────────────────────────── */
+/* Wrapped in @layer base so Tailwind v4 / Turbopack includes them in the      */
+/* compiled output. We override both the shadcn vars (--primary etc.) and the  */
+/* Tailwind v4 color tokens (--color-primary etc.) to handle static resolution.*/
+@layer base {
+  /* Ocean (blue) */
+  [data-color-theme="ocean"] {
+    --primary: hsl(221 83% 53%);
+    --primary-foreground: hsl(0 0% 100%);
+    --ring: hsl(221 83% 53%);
+    --sidebar-primary: hsl(221 83% 53%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-ring: hsl(221 83% 53%);
+    --color-primary: hsl(221 83% 53%);
+    --color-primary-foreground: hsl(0 0% 100%);
+    --color-ring: hsl(221 83% 53%);
+    --color-sidebar-primary: hsl(221 83% 53%);
+    --color-sidebar-primary-foreground: hsl(0 0% 100%);
+    --color-sidebar-ring: hsl(221 83% 53%);
+  }
+  .dark[data-color-theme="ocean"] {
+    --primary: hsl(217 91% 65%);
+    --primary-foreground: hsl(0 0% 100%);
+    --ring: hsl(217 91% 65%);
+    --sidebar-primary: hsl(217 91% 65%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-ring: hsl(217 91% 65%);
+    --color-primary: hsl(217 91% 65%);
+    --color-primary-foreground: hsl(0 0% 100%);
+    --color-ring: hsl(217 91% 65%);
+    --color-sidebar-primary: hsl(217 91% 65%);
+    --color-sidebar-primary-foreground: hsl(0 0% 100%);
+    --color-sidebar-ring: hsl(217 91% 65%);
+  }
 
-/* Ocean (blue) */
-[data-color-theme="ocean"] {
-  --primary: hsl(221 83% 53%);
-  --primary-foreground: hsl(0 0% 100%);
-  --ring: hsl(221 83% 53%);
-  --sidebar-primary: hsl(221 83% 53%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-ring: hsl(221 83% 53%);
-}
-.dark[data-color-theme="ocean"] {
-  --primary: hsl(217 91% 65%);
-  --primary-foreground: hsl(0 0% 100%);
-  --ring: hsl(217 91% 65%);
-  --sidebar-primary: hsl(217 91% 65%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-ring: hsl(217 91% 65%);
-}
+  /* Forest (green) */
+  [data-color-theme="forest"] {
+    --primary: hsl(142 71% 35%);
+    --primary-foreground: hsl(0 0% 100%);
+    --ring: hsl(142 71% 35%);
+    --sidebar-primary: hsl(142 71% 35%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-ring: hsl(142 71% 35%);
+    --color-primary: hsl(142 71% 35%);
+    --color-primary-foreground: hsl(0 0% 100%);
+    --color-ring: hsl(142 71% 35%);
+    --color-sidebar-primary: hsl(142 71% 35%);
+    --color-sidebar-primary-foreground: hsl(0 0% 100%);
+    --color-sidebar-ring: hsl(142 71% 35%);
+  }
+  .dark[data-color-theme="forest"] {
+    --primary: hsl(142 69% 55%);
+    --primary-foreground: hsl(0 0% 5%);
+    --ring: hsl(142 69% 55%);
+    --sidebar-primary: hsl(142 69% 55%);
+    --sidebar-primary-foreground: hsl(0 0% 5%);
+    --sidebar-ring: hsl(142 69% 55%);
+    --color-primary: hsl(142 69% 55%);
+    --color-primary-foreground: hsl(0 0% 5%);
+    --color-ring: hsl(142 69% 55%);
+    --color-sidebar-primary: hsl(142 69% 55%);
+    --color-sidebar-primary-foreground: hsl(0 0% 5%);
+    --color-sidebar-ring: hsl(142 69% 55%);
+  }
 
-/* Forest (green) */
-[data-color-theme="forest"] {
-  --primary: hsl(142 71% 35%);
-  --primary-foreground: hsl(0 0% 100%);
-  --ring: hsl(142 71% 35%);
-  --sidebar-primary: hsl(142 71% 35%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-ring: hsl(142 71% 35%);
-}
-.dark[data-color-theme="forest"] {
-  --primary: hsl(142 69% 55%);
-  --primary-foreground: hsl(0 0% 5%);
-  --ring: hsl(142 69% 55%);
-  --sidebar-primary: hsl(142 69% 55%);
-  --sidebar-primary-foreground: hsl(0 0% 5%);
-  --sidebar-ring: hsl(142 69% 55%);
-}
-
-/* Rose (pink) */
-[data-color-theme="rose"] {
-  --primary: hsl(346 77% 50%);
-  --primary-foreground: hsl(0 0% 100%);
-  --ring: hsl(346 77% 50%);
-  --sidebar-primary: hsl(346 77% 50%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-ring: hsl(346 77% 50%);
-}
-.dark[data-color-theme="rose"] {
-  --primary: hsl(346 77% 63%);
-  --primary-foreground: hsl(0 0% 100%);
-  --ring: hsl(346 77% 63%);
-  --sidebar-primary: hsl(346 77% 63%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-ring: hsl(346 77% 63%);
+  /* Rose (pink) */
+  [data-color-theme="rose"] {
+    --primary: hsl(346 77% 50%);
+    --primary-foreground: hsl(0 0% 100%);
+    --ring: hsl(346 77% 50%);
+    --sidebar-primary: hsl(346 77% 50%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-ring: hsl(346 77% 50%);
+    --color-primary: hsl(346 77% 50%);
+    --color-primary-foreground: hsl(0 0% 100%);
+    --color-ring: hsl(346 77% 50%);
+    --color-sidebar-primary: hsl(346 77% 50%);
+    --color-sidebar-primary-foreground: hsl(0 0% 100%);
+    --color-sidebar-ring: hsl(346 77% 50%);
+  }
+  .dark[data-color-theme="rose"] {
+    --primary: hsl(346 77% 63%);
+    --primary-foreground: hsl(0 0% 100%);
+    --ring: hsl(346 77% 63%);
+    --sidebar-primary: hsl(346 77% 63%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-ring: hsl(346 77% 63%);
+    --color-primary: hsl(346 77% 63%);
+    --color-primary-foreground: hsl(0 0% 100%);
+    --color-ring: hsl(346 77% 63%);
+    --color-sidebar-primary: hsl(346 77% 63%);
+    --color-sidebar-primary-foreground: hsl(0 0% 100%);
+    --color-sidebar-ring: hsl(346 77% 63%);
+  }
 }

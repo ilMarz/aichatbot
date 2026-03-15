@@ -20,8 +20,8 @@ export function ColorThemePicker() {
                 backgroundColor: theme.color,
                 boxShadow:
                   colorTheme === theme.id
-                    ? `0 0 0 2px var(--background), 0 0 0 4px ${theme.color}`
-                    : undefined,
+                    ? `0 0 0 2px var(--sidebar), 0 0 0 4px ${theme.color}`
+                    : `inset 0 0 0 1px color-mix(in srgb, ${theme.color} 80%, transparent)`,
               }}
             />
           </TooltipTrigger>
