@@ -9,6 +9,7 @@ import {
   updateUserRole,
   upsertSetting,
 } from "@/lib/db/queries";
+import { generateSuggestedQuestions } from "@/lib/ai/generate-suggestions";
 import type { UserRole } from "@/lib/db/schema";
 
 // ─── Guard ────────────────────────────────────────────────────────────────────
@@ -40,46 +41,13 @@ export async function updateSystemPromptAction(
       return { status: "error", message: "Il prompt non può essere vuoto." };
     }
     await upsertSetting("system_prompt", parsed.data);
+
+    // Auto-generate suggested questions based on the new prompt
+    const questions = await generateSuggestedQuestions(parsed.data);
+    await upsertSetting("suggested_questions", JSON.stringify(questions));
+
     revalidatePath("/admin/settings");
     return { status: "success", message: "Prompt aggiornato con successo." };
-  } catch (err: any) {
-    return {
-      status: "error",
-      message: err?.message ?? "Errore durante il salvataggio.",
-    };
-  }
-}
-
-// ─── Suggested Questions ──────────────────────────────────────────────────────
-
-export type SuggestedQuestionsState = {
-  status: "idle" | "success" | "error";
-  message?: string;
-};
-
-export async function updateSuggestedQuestionsAction(
-  _state: SuggestedQuestionsState,
-  formData: FormData
-): Promise<SuggestedQuestionsState> {
-  try {
-    await requireAdmin();
-    const questions = [
-      formData.get("q1"),
-      formData.get("q2"),
-      formData.get("q3"),
-      formData.get("q4"),
-    ]
-      .map((q) => String(q ?? "").trim())
-      .filter(Boolean);
-    if (questions.length === 0) {
-      return { status: "error", message: "Inserisci almeno una domanda." };
-    }
-    await upsertSetting("suggested_questions", JSON.stringify(questions));
-    revalidatePath("/admin/settings");
-    return {
-      status: "success",
-      message: "Domande suggerite aggiornate con successo.",
-    };
   } catch (err: any) {
     return {
       status: "error",

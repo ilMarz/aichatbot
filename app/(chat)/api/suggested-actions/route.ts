@@ -1,12 +1,6 @@
 import { NextResponse } from "next/server";
-import { getSetting } from "@/lib/db/queries";
-
-const DEFAULT_SUGGESTIONS = [
-  "Come posso aiutarti oggi?",
-  "Hai domande su qualcosa di specifico?",
-  "Vuoi che ti spieghi qualcosa?",
-  "Come posso semplificarti la giornata?",
-];
+import { getSetting, upsertSetting } from "@/lib/db/queries";
+import { generateSuggestedQuestions } from "@/lib/ai/generate-suggestions";
 
 export async function GET() {
   try {
@@ -17,8 +11,15 @@ export async function GET() {
         return NextResponse.json({ suggestions: parsed });
       }
     }
+
+    // No questions stored yet - generate from system prompt and cache
+    const systemPrompt = await getSetting("system_prompt");
+    const questions = await generateSuggestedQuestions(
+      systemPrompt ?? "You are a friendly assistant."
+    );
+    await upsertSetting("suggested_questions", JSON.stringify(questions));
+    return NextResponse.json({ suggestions: questions });
   } catch {
-    // fall through to default
+    return NextResponse.json({ suggestions: [] });
   }
-  return NextResponse.json({ suggestions: DEFAULT_SUGGESTIONS });
 }
