@@ -7,7 +7,7 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://chat.vercel.ai"),
+  metadataBase: new URL("https://tp-ai.com"),
   title: "tp-ai",
   description: "tp-ai — your AI assistant.",
   icons: {
